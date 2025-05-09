@@ -34,15 +34,13 @@ background_sol = solve_ivp (background_ode, N, y_0, dense_output=True, method='B
 phi = lambda t: background_sol.sol(t)[0]
 phi_dot = lambda t: background_sol.sol(t)[1]
 eps = lambda t: 0.5*phi_dot(t)**2
-f_escala = lambda t: np.abs(phi(t)-21.90300347229543) # Calculated in normalization
-inflation_star = minimize_scalar(f_escala, bounds=(5,8))
-Ne_star = inflation_star.x
 f_inflation_limit = lambda t: np.abs(eps(t)-1.0)
-inflation_limit = minimize_scalar(f_inflation_limit, bounds=(Ne_limit_appr-1,Ne_limit_appr+2))
+inflation_limit = minimize_scalar(f_inflation_limit, bounds=(Ne_limit_appr-2,Ne_limit_appr+2))
 Ne_limit = inflation_limit.x
-print('The end of inflation occurs at N = '+str(Ne_limit-Ne_star)+' with phi (Mpl) = '+str(phi(Ne_limit)))
+Ne_star = Ne_limit - 60
+print('The end of inflation occurs at N = '+str(Ne_limit)+' with phi (Mpl) = '+str(phi(Ne_limit)))
 
-Ne_bey = np.linspace(0,Ne_limit+4,10000)
+Ne_bey = np.linspace(0,Ne_limit+3.5,10000)
 x = np.linspace(1/3,phi_0,100)
 y = -4/x
 Y = np.linspace(-6,4,100)
@@ -50,9 +48,9 @@ X = np.empty(len(Y))
 for i in range(len(Y)):
     X[i] = phi(Ne_limit)
 
-plt.figure(3)
+plt.figure(1)
 line1 = plt.plot(phi(Ne_bey),phi_dot(Ne_bey),color='b',linewidth=3,label='Numérico')
-line2 = plt.plot(x,y,linestyle='--',color='r',linewidth=3,label='de Sitter')
+line2 = plt.plot(x,y,linestyle='--',color='r',linewidth=3,label='cuasi-de Sitter')
 line3 = plt.plot(X,Y,linestyle='--',color='g',linewidth=3,label='Slow-roll límite')
 plt.xlabel(r'Campo inflatón $\phi$',config1)
 plt.ylabel(r'Derivada del campo $\frac{d\phi}{dN}$',config1)
@@ -61,7 +59,7 @@ plt.xlim(-1.5,23.5)
 plt.ylim(-6,4)
 plt.legend(prop=config2)
 plt.tick_params(axis='both',which='major',labelsize=14)
-# plt.savefig('phase_diagram_beyond.pdf',bbox_inches='tight')
+plt.savefig('phase_diagram_beyond.pdf',bbox_inches='tight')
 
 Y = np.linspace(-3,12,100)
 X = np.empty(len(Y))
@@ -69,18 +67,18 @@ for i in range(len(Y)):
     X[i] = Ne_limit-Ne_star
 XX = np.linspace(0,Ne_limit-0.1-Ne_star,200)
 YY = np.sqrt(phi(Ne_star)**2 - 8*XX)
-plt.figure(4)
+plt.figure(2)
 plt.plot(Ne_bey-Ne_star,phi(Ne_bey),linewidth=3,label='Numérico')
-plt.plot(XX,YY,linestyle='--',color='r',linewidth=3,label='de Sitter')
+plt.plot(XX,YY,linestyle='--',color='r',linewidth=3,label='cuasi-de Sitter')
 plt.plot(X,Y,linestyle='--',color='g',linewidth=3,label='Slow-roll límite')
 plt.xlabel(r'N e-folds',config1)
 plt.ylabel(r'Campo inflatón $\phi$',config1)
 # plt.title(r'Evolution of $\phi$ beyond $\epsilon = 1$ (in e-folds)',config)
-plt.xlim(45,Ne_limit+4.5-Ne_star)
+plt.xlim(45,Ne_limit+4-Ne_star)
 plt.ylim(-1.5,12)
 plt.legend(prop=config2)
 plt.tick_params(axis='both',which='major',labelsize=14)
-# plt.savefig('evolution_field.pdf',bbox_inches='tight')
+plt.savefig('evolution_field.pdf',bbox_inches='tight')
 
 with open('lambda_quartic.txt','r') as archivo:
     lineas = archivo.readlines()
@@ -89,24 +87,24 @@ conver = 3.808339152e56 # from Mpl to Mpc^-1
 H = lambda t: np.sqrt(lam*phi(t)**4/(3-eps(t))) # Units of Mpl
 a_0 = 0.05/(H(Ne_star)*conver*np.exp(Ne_star)) # Units of Mpc^-1/Mpc^-1
 a = lambda t: a_0*np.exp(t)
-plt.figure(5)
-plt.plot(Ne_bey-Ne_star,np.log(np.abs(1/(a(Ne_bey)*H(Ne_bey)*conver))),linewidth=2.5)
+plt.figure(3)
+plt.plot(Ne_bey-Ne_star,np.log(np.abs(1/(a(Ne_bey)*H(Ne_bey)*conver))),linewidth=3)
 plt.xlabel('N e-folds',config1)
 plt.ylabel(r'Natural logarithm $\left(\frac{Mpc_{-1}}{aH}\right)$',config1)
 # plt.title('Evolution of Hubble radius',config)
-plt.xlim((45,Ne_limit+4.3-Ne_star))
+plt.xlim((45,Ne_limit+3.8-Ne_star))
 plt.ylim(np.log(1/(a(Ne_limit)*H(Ne_limit)*conver))-1,np.log(1/(a(45+Ne_star)*H(45+Ne_star)*conver))+1)
-plt.tick_params(axis='both', which='major', labelsize=12.5)
-# plt.savefig('Hubble_radius.pdf',bbox_inches='tight')
+plt.tick_params(axis='both', which='major', labelsize=14)
+plt.savefig('Hubble_radius.pdf',bbox_inches='tight')
 
 energy_density = lambda t: 0.5*H(t)**2*phi_dot(t)**2 + lam*phi(t)**4
 pression = lambda t: 0.5*H(t)**2*phi_dot(t)**2 - lam*phi(t)**4
 w = lambda t: pression(t)/energy_density(t)
 print('The end of inflation coincides with w = '+str(w(Ne_limit))) # inflation limit takes place when w=-1/3 for the first time
 w_inflation = quad(lambda t: 2/3*eps(t)-1,0,Ne_limit)[0]/Ne_limit
-w_beyond = quad(lambda t: 2/3*eps(t)-1,Ne_limit,Ne_limit+4)[0]/4
-print('The average value of w during inflation is: '+str(w_inflation)+', while the average value 4 e-folds after the end of inflation is: '+str(w_beyond))
-fig, ax_main = plt.subplots(num=6)
+w_beyond = quad(lambda t: 2/3*eps(t)-1,Ne_limit,Ne_limit+3.5)[0]/3.5
+print('The average value of w during inflation is: '+str(w_inflation)+', while the average value 3.5 e-folds after the end of inflation is: '+str(w_beyond))
+fig, ax_main = plt.subplots(num=4)
 ax_main.plot(Ne_bey-Ne_star,w(Ne_bey),Ne_bey-Ne_star,2/3*eps(Ne_bey)-1,linewidth=3)
 ax_main.set_xlabel('N e-folds',config1)
 ax_main.set_ylabel(r'Ecuación de estado $\omega$',config1)
@@ -115,7 +113,7 @@ ax_main.legend([r'$\frac{p}{\rho}$',r'$\frac{2}{3} \epsilon - 1$'],prop=config2)
 ax_main.tick_params(axis='both', which='major', labelsize=14)
 ax_inset = fig.add_axes([0.25,0.25,0.375,0.375])
 ax_inset.plot(Ne_bey-Ne_star,w(Ne_bey),Ne_bey-Ne_star,2/3*eps(Ne_bey)-1,linewidth=3)
-ax_inset.set_xlim(Ne_limit-Ne_star,Ne_limit+4.2-Ne_star)
-# plt.savefig('state_eq.pdf',bbox_inches='tight')
+ax_inset.set_xlim(Ne_limit-Ne_star,Ne_limit+3.7-Ne_star)
+plt.savefig('state_eq.pdf',bbox_inches='tight')
 
 plt.show()

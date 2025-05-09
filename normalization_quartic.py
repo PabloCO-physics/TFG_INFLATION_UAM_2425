@@ -19,10 +19,13 @@ config2 = {
 }
 
 ## VARIABLES AND DATA (using natural units: M_planck=1, c=1, h_b=1)
-N = [0,75] # limits of e-folds
+N = [0,80] # limits of e-folds
 conver = 3.808339152e56 # from Mpl to Mpc^-1
-As = 2.105e-9
-ns = 0.9665
+As = 2.107e-9
+s_As = 0.025e-9
+ns = 0.9690
+s_ns = 0.0035
+r = 0.032
 
 ## BACKGROUND
 # Initial conditions:
@@ -93,18 +96,19 @@ np.savetxt("Ds_quartic.txt", Ds_probe)
 
 plt.figure(1)
 horizontal = As*np.ones(len(lam_values))
-horizontal1 = 2.165e-9*np.ones(len(lam_values))
-horizontal2 = 2.045e-9*np.ones(len(lam_values))
-plt.plot(lam_values*1e14,Ds_probe*1e9,linewidth=2.5,label='Slow-roll')
-plt.plot(lam_values*1e14,horizontal1*1e9,linestyle='--',color='r',linewidth=2.5,label=r'$n_s \pm 2\sigma$')
-plt.plot(lam_values*1e14,horizontal2*1e9,linestyle='--',color='r',linewidth=2.5)
-plt.plot(lam_values*1e14,horizontal*1e9,linestyle='--',color='k',linewidth=2.5)
-plt.xlabel(r'Quartic inflaton parameter $\lambda \quad \left(10^{-14}\right)$',config1)
+horizontal1 = (As+2*s_As)*np.ones(len(lam_values))
+horizontal2 = (As-2*s_As)*np.ones(len(lam_values))
+plt.plot(lam_values*1e14,Ds_probe*1e9,linewidth=3,label='Slow-roll')
+plt.plot(lam_values*1e14,horizontal1*1e9,linestyle='--',color='r',linewidth=3,label=r'$n_s \pm 2\sigma$')
+plt.plot(lam_values*1e14,horizontal2*1e9,linestyle='--',color='r',linewidth=3)
+plt.plot(lam_values*1e14,horizontal*1e9,linestyle='--',color='k',linewidth=3)
+plt.xlabel(r'Parámetro $\lambda \quad \left(10^{-14}\right)$',config1)
 plt.xscale('log')
-plt.xlim(2.5,4.5)
-plt.xticks(np.arange(2.5, 5, 0.5))
-plt.ylim(1.3,2.7)
-plt.ylabel(r'Amplitude of scalar spectrum $\Delta_s^2 \quad \left(10^{-9}\right)$',config1)
+plt.xlim((3,4.5))
+plt.xticks(np.arange(3, 5, 0.5))
+plt.ylim((1.6,2.7))
+plt.ylabel(r'Amplitud $\Delta_s^2 \quad \left(10^{-9}\right)$',config1)
+plt.tight_layout()
 ax = plt.gca()
 ax.xaxis.set_major_formatter(mticker.ScalarFormatter())
 ax.xaxis.get_major_formatter().set_scientific(False)
@@ -114,23 +118,23 @@ ax.xaxis.get_major_formatter().set_scientific(False)
 ax.xaxis.get_major_formatter().set_useOffset(False)
 # plt.title(r'Approximation of scalar power spectrum at $k_{*} = 0.05\ Mpc^{-1}$',config)
 plt.legend(prop=config2)
-plt.tick_params(axis='both', which='major', labelsize=12.5)
-# plt.savefig('scalar_amplitude.pdf',bbox_inches='tight')
+plt.tick_params(axis='both', which='major', labelsize=14)
+plt.savefig('scalar_amplitude.pdf',bbox_inches='tight')
 
 plt.figure(2)
 phix = np.linspace(20,35,100)
 horizontal = ns*np.ones(len(phix))
-horizontal1 = 0.959*np.ones(len(phix))
-horizontal2 = 0.974*np.ones(len(phix))
-plt.plot(phix,1-24/phix**2,linewidth=2.5,label='Slow-roll')
-plt.plot(phix,horizontal1,linestyle='--',color='r',linewidth=2.5,label=r'$n_s \pm 2\sigma$')
-plt.plot(phix,horizontal2,linestyle='--',color='r',linewidth=2.5)
-plt.plot(phix,horizontal,linestyle='--',color='k',linewidth=2.5)
-plt.xlabel(r'Inflaton field $\phi \quad (M_{pl})$',config1)
-plt.ylabel(r'Scalar spectral index $n_s$',config1)
+horizontal1 = (ns+2*s_ns)*np.ones(len(phix))
+horizontal2 = (ns-2*s_ns)*np.ones(len(phix))
+plt.plot(phix,1-24/phix**2,linewidth=3,label='Slow-roll')
+plt.plot(phix,horizontal1,linestyle='--',color='r',linewidth=3,label=r'$n_s \pm 2\sigma$')
+plt.plot(phix,horizontal2,linestyle='--',color='r',linewidth=3)
+plt.plot(phix,horizontal,linestyle='--',color='k',linewidth=3)
+plt.xlabel(r'Campo inflatón $\phi \quad (M_{pl})$',config1)
+plt.ylabel(r'Índice espectral escalar $n_s$',config1)
 # plt.title('Evolution of scalar spectral index',config)
 plt.legend(prop=config2)
-plt.tick_params(axis='both', which='major', labelsize=12.5)
-# plt.savefig('spectral_index_probe.pdf',bbox_inches='tight')
+plt.tick_params(axis='both', which='major', labelsize=14)
+plt.savefig('spectral_index_probe.pdf',bbox_inches='tight')
 
 plt.show()
